@@ -1,4 +1,5 @@
 import { NativeModules, Platform } from 'react-native';
+export { useScanner } from './useScanner';
 
 const LINKING_ERROR =
   `The package 'react-native-zebra-scanner' doesn't seem to be linked. Make sure: \n\n` +
@@ -19,4 +20,12 @@ const ZebraScanner = NativeModules.ZebraScanner
 
 export function multiply(a: number, b: number): Promise<number> {
   return ZebraScanner.multiply(a, b);
+}
+
+export function onInit(id: string) {
+  return ZebraScanner.onInit(id);
+}
+
+export function createProfile(profileName: string, intentAction: string) {
+  return ZebraScanner.createProfile(profileName, intentAction);
 }
