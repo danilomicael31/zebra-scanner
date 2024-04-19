@@ -11,18 +11,21 @@ createProfile('Zebra Scanner', 'br.com.example.zebra.SCANNER');
 
 export default function App() {
   const [result, setResult] = React.useState<number | undefined>();
-  const [barcode, setBarcode] = React.useState<string>();
+  const [, setBarcode] = React.useState<string>();
 
-  useScanner(setBarcode);
+  const scanner = useScanner({
+    onCallbackScanner: setBarcode,
+    canReset: false,
+  });
 
   React.useEffect(() => {
     multiply(3, 7).then(setResult);
   }, []);
 
   React.useEffect(() => {
-    console.log({ barcode });
-    setTimeout(() => setBarcode(undefined), 500);
-  }, [barcode]);
+    console.log({ scanner });
+    // setTimeout(() => setBarcode(undefined), 500);
+  }, [scanner]);
 
   return (
     <View style={styles.container}>
