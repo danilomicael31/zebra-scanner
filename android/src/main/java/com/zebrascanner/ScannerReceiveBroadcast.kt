@@ -33,7 +33,8 @@ class ScannerReceiveBroadcast(reactContext: ReactApplicationContext?) : Broadcas
         val key = "onScanner-$id"
         Log.d("SCANNER", decodedData.toString())
 
-        _reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java).emit(key, decodedData.toString())
-
+        _reactContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                .emit(key, decodedData.toString())
     }
 }
