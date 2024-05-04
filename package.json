@@ -1,6 +1,6 @@
 {
   "name": "react-native-zebra-scanner",
-  "version": "0.1.2",
+  "version": "0.1.5",
   "description": "lib react native to use zebra scanner",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -26,11 +26,9 @@
     "!**/.*"
   ],
   "scripts": {
-    "example": "yarn workspace react-native-zebra-scanner-example",
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
-    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
     "release": "release-it"
   },
@@ -84,7 +82,6 @@
   "jest": {
     "preset": "react-native",
     "modulePathIgnorePatterns": [
-      "<rootDir>/example/node_modules",
       "<rootDir>/lib/"
     ]
   },
