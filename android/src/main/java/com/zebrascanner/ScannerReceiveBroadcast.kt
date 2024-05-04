@@ -3,15 +3,18 @@ package com.zebrascanner
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.modules.core.DeviceEventManagerModule
 
+
 class ScannerReceiveBroadcast(reactContext: ReactApplicationContext?) : BroadcastReceiver() {
     private val _reactContext: ReactApplicationContext = reactContext!!
     var id: String? = null
     var action: String? = null
+    var isRegistered: Boolean = false
 
     override fun onReceive(context: Context?, intent: Intent?) {
         val intentAction = intent?.action
@@ -25,7 +28,27 @@ class ScannerReceiveBroadcast(reactContext: ReactApplicationContext?) : Broadcas
         }
     }
 
-    private fun displayScanResult(initiatingIntent: Intent) {
+  fun register(reactContext: ReactApplicationContext, filter: IntentFilter?): Intent? {
+      if(!isRegistered) {
+        isRegistered = true
+        return reactContext.registerReceiver(this, filter)
+      }
+
+    return null
+  }
+
+  fun unregister(context: Context): Boolean {
+    return (isRegistered && _unregister(context))
+  }
+
+  private fun _unregister(context: Context): Boolean {
+    context.unregisterReceiver(this)
+    isRegistered = false
+    return true
+  }
+
+
+  private fun displayScanResult(initiatingIntent: Intent) {
         val decodedSource = initiatingIntent.getStringExtra("com.symbol.datawedge.source")
         val decodedData = initiatingIntent.getStringExtra("com.symbol.datawedge.data_string")
         val decodedLabelType = initiatingIntent.getStringExtra("com.symbol.datawedge.label_type")

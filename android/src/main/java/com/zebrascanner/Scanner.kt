@@ -1,39 +1,87 @@
 package com.zebrascanner
 
+import android.content.Intent
 import android.os.Bundle
+import com.facebook.react.bridge.ReactApplicationContext
 
-class Scanner(val profileName: String, val intentAction: String, val packageName: String) {
+class Scanner(val profileName: String, val intentAction: String, val reactContext: ReactApplicationContext) {
   val profileEnabled = true
   val configMode = "CREATE_IF_NOT_EXIST"
-  val pluginName = "INTENT"
+  val pluginNameIntent = "INTENT"
+  val pluginNameKeystroke = "KEYSTROKE"
   val resetConfig = false
   val intentDelivery = 2
   val intentOutputEnable = true
+  val keyStrokeEnable = false
+  var bundleProfile = Bundle()
 
-  fun createIntentProfile(): Bundle {
-    val bMain = Bundle()
-    val bConfig = Bundle()
-    val bundleApp1 = Bundle()
-    val bParams = Bundle()
+  init {
+      bundleProfile = _createProfile()
+  }
 
-    bMain.putString("PROFILE_NAME", profileName)
-    bMain.putString("PROFILE_ENABLED", profileEnabled.toString())
-    bMain.putString("CONFIG_MODE", configMode)
+  fun createProfile() {
+    val bundleIntent = setIntentConfig()
+    val bundleKeyStroke = setKeyStrokeConfig()
+    val bundleAppList = setAppList()
 
-    bParams.putString("intent_output_enabled", intentOutputEnable.toString())
-    bParams.putString("intent_action", intentAction)
-    bParams.putInt("intent_delivery", intentDelivery)
+    sendBroadCastIntent(bundleIntent)
+    sendBroadCastIntent(bundleKeyStroke)
+    sendBroadCastIntent(bundleAppList)
+  }
 
-    bConfig.putString("PLUGIN_NAME", pluginName)
-    bConfig.putString("RESET_CONFIG", resetConfig.toString())
-    bConfig.putBundle("PARAM_LIST", bParams)
+  private fun sendBroadCastIntent(bundleParam: Bundle) {
+    val intent = Intent()
+    intent.setAction("com.symbol.datawedge.api.ACTION")
 
-    bundleApp1.putString("PACKAGE_NAME", packageName)
-    bundleApp1.putStringArray("ACTIVITY_LIST", arrayOf("*"))
+    bundleProfile.putBundle("PLUGIN_CONFIG", bundleParam)
+    intent.putExtra("com.symbol.datawedge.api.SET_CONFIG", bundleProfile)
 
-    bMain.putBundle("PLUGIN_CONFIG", bConfig)
-    bMain.putParcelableArray("APP_LIST", arrayOf(bundleApp1))
+    reactContext.sendBroadcast(intent)
+  }
 
-    return bMain
+  private fun _createProfile(): Bundle {
+    val bundleMain = Bundle()
+    bundleMain.putString("PROFILE_NAME", profileName)
+    bundleMain.putString("PROFILE_ENABLED", profileEnabled.toString())
+    bundleMain.putString("CONFIG_MODE", configMode)
+
+    return bundleMain
+  }
+
+  private fun setAppList(): Bundle {
+    val bundleApp = Bundle()
+    val packageName = reactContext.packageName
+
+    bundleApp.putString("PACKAGE_NAME", packageName)
+    bundleApp.putStringArray("ACTIVITY_LIST", arrayOf("*"))
+
+    return bundleApp
+  }
+
+  private fun setKeyStrokeConfig(): Bundle {
+    val bundleParams = Bundle()
+
+    bundleParams.putString("keystroke_output_enabled", keyStrokeEnable.toString());
+
+    return createBundleConfig(pluginNameKeystroke, bundleParams)
+  }
+  private fun setIntentConfig(): Bundle {
+    val bundleParams = Bundle()
+
+    bundleParams.putString("intent_output_enabled", intentOutputEnable.toString())
+    bundleParams.putString("intent_action", intentAction)
+    bundleParams.putInt("intent_delivery", intentDelivery)
+
+    return createBundleConfig(pluginNameIntent, bundleParams)
+  }
+
+  private fun createBundleConfig(pluginName: String, bundleParam: Bundle): Bundle {
+    val bundleConfig = Bundle()
+
+    bundleConfig.putString("PLUGIN_NAME", pluginName)
+    bundleConfig.putString("RESET_CONFIG", resetConfig.toString())
+    bundleConfig.putBundle("PARAM_LIST", bundleParam)
+
+    return bundleConfig
   }
 }
