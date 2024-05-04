@@ -35,10 +35,10 @@ class ZebraScannerModule(reactContext: ReactApplicationContext) :
   }
 
   private fun onRegisterReceiver() {
-    if (_id == null) return
+    if (_id == null || _reactContext == null) return
     myBroadcastReceiver.id = _id
     myBroadcastReceiver.action = _intentAction
-    _reactContext?.registerReceiver(myBroadcastReceiver, _filter)
+    myBroadcastReceiver.register(_reactContext, _filter)
   }
 
   @ReactMethod
@@ -53,14 +53,10 @@ class ZebraScannerModule(reactContext: ReactApplicationContext) :
     _filter.addAction(intentAction)
     onRegisterReceiver()
 
-    val scanner = Scanner(profileName, intentAction, _reactContext?.packageName.toString())
-    val bundle = scanner.createIntentProfile()
-
-    val i = Intent()
-    i.setAction("com.symbol.datawedge.api.ACTION")
-    i.putExtra("com.symbol.datawedge.api.SET_CONFIG", bundle)
-
-    _reactContext?.sendBroadcast(i)
+    if (_reactContext != null) {
+      val scanner = Scanner(profileName, intentAction, _reactContext)
+      scanner.createProfile()
+    }
   }
 
   companion object {
@@ -72,10 +68,10 @@ class ZebraScannerModule(reactContext: ReactApplicationContext) :
   }
 
   override fun onHostPause() {
-    _reactContext?.unregisterReceiver(myBroadcastReceiver)
+    if (_reactContext != null) myBroadcastReceiver.unregister(_reactContext)
   }
 
   override fun onHostDestroy() {
-    _reactContext?.unregisterReceiver(myBroadcastReceiver)
+    if (_reactContext != null) myBroadcastReceiver.unregister(_reactContext)
   }
 }
