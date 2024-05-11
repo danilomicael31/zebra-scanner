@@ -1,6 +1,6 @@
 {
   "name": "react-native-zebra-scanner",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "lib react native to use zebra scanner",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
