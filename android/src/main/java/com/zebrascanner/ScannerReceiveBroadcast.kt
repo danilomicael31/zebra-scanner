@@ -4,7 +4,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.modules.core.DeviceEventManagerModule
@@ -31,7 +33,13 @@ class ScannerReceiveBroadcast(reactContext: ReactApplicationContext?) : Broadcas
   fun register(reactContext: ReactApplicationContext, filter: IntentFilter?): Intent? {
       if(!isRegistered) {
         isRegistered = true
-        return reactContext.registerReceiver(this, filter)
+//        return reactContext.registerReceiver(this, filter)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+          reactContext.registerReceiver(this, filter, Context.RECEIVER_EXPORTED)
+        }else {
+          reactContext.registerReceiver(this, filter)
+        }
       }
 
     return null
@@ -49,12 +57,12 @@ class ScannerReceiveBroadcast(reactContext: ReactApplicationContext?) : Broadcas
 
 
   private fun displayScanResult(initiatingIntent: Intent) {
-        val decodedSource = initiatingIntent.getStringExtra("com.symbol.datawedge.source")
+//        val decodedSource = initiatingIntent.getStringExtra("com.symbol.datawedge.source")
         val decodedData = initiatingIntent.getStringExtra("com.symbol.datawedge.data_string")
-        val decodedLabelType = initiatingIntent.getStringExtra("com.symbol.datawedge.label_type")
-        val event = Arguments.createMap()
+//        val decodedLabelType = initiatingIntent.getStringExtra("com.symbol.datawedge.label_type")
+//        val event = Arguments.createMap()
         val key = "onScanner-$id"
-        Log.d("SCANNER", decodedData.toString())
+//        Log.d("SCANNER", decodedData.toString())
 
         _reactContext
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
