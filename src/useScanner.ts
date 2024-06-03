@@ -16,34 +16,40 @@ const DEFAULT_CONFIG: UseScannerConfig = {
   canReset: true,
   canScan: true,
   timeOutToReset: 500,
-  onCallbackScanner: console.log,
 };
 
-export const useScanner = (config?: UseScannerConfig) => {
+export const useScanner = () => {
   const [scanner, setScanner] = useState<string>();
+  const [config, _setConfig] = useState<UseScannerConfig>(DEFAULT_CONFIG);
 
   const _id = useId();
-  const _config = { ...DEFAULT_CONFIG, ...config };
 
   const onScanner = (data: string) => {
     setScanner(data);
   };
 
+  const setConfig = (config: UseScannerConfig) => {
+    _setConfig({ ...DEFAULT_CONFIG, ...config });
+  };
+
   useEffect(() => {
-    if (scanner && _config.onCallbackScanner) {
-      _config.onCallbackScanner(scanner);
+    if (scanner && config.canScan && config.onCallbackScanner) {
+      config.onCallbackScanner(scanner);
     }
-    if (scanner && _config.canReset)
-      setTimeout(() => setScanner(undefined), _config.timeOutToReset);
-  }, [scanner, _config]);
+    if (scanner && config.canScan && config.canReset)
+      setTimeout(() => setScanner(undefined), config.timeOutToReset);
+  }, [scanner, config]);
 
   useEffect(() => {
-    if (!_config.canScan) return;
+    const eventId = config.id ?? _id;
+    if (!config.canScan) {
+      DeviceEventEmitter.removeAllListeners(`onScanner-${eventId}`);
+      return;
+    }
 
-    const eventId = _config.id ?? _id;
     onInit(eventId);
     DeviceEventEmitter.addListener(`onScanner-${eventId}`, onScanner);
-  }, [_id, _config]);
+  }, [_id, config]);
 
-  return scanner;
+  return { scanner, setConfig };
 };
