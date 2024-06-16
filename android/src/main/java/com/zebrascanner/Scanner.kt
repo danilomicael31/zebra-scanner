@@ -71,6 +71,7 @@ class Scanner(
     val bundleConfig = createBundleConfig(pluginNameKeystroke, bundleParams)
     sendBroadCastIntent(bundleConfig)
   }
+
   private fun setIntentConfig() {
     val bundleParams = Bundle()
 
