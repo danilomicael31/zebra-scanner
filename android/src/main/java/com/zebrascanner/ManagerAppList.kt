@@ -3,26 +3,16 @@ package com.zebrascanner
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 
 class ManagerAppList {
-  val profiles: ArrayList<ZebraProfile> = ArrayList<ZebraProfile>()
+  private val profiles = ArrayList<ZebraProfile>()
   val PROFILE_NAME = "Zebra Scanner"
   val PACKAGE_NAME = "com.example.certificatemanager"
 
-  var appZebraProfile = ZebraProfile()
-  var profilesNames: ArrayList<String> = ArrayList<String>()
-  var myContext: Context? = null
-  var isRightProfile = false
-
-
-  fun addProfileName(profileName: String) {
-    val includes = profilesNames.find { item -> item.equals(profilesNames) }
-    if (includes == null) {
-      profilesNames.add(profileName)
-//      profilesNames.forEach { item -> Log.d("ITEM", item) }
-    }
-  }
+  private var appZebraProfile = ZebraProfile()
+  private var profilesNames = ArrayList<String>()
+  private var myContext: Context? = null
+  private var isRightProfile = false
 
   fun addProfile(profile: ZebraProfile) {
     val includes = profiles.find { item -> item.profileName == profile.profileName }
@@ -30,33 +20,14 @@ class ManagerAppList {
     if (includes == null) {
       profiles.add(profile)
 
+      if (profile.profileName == PROFILE_NAME) {
+        setAppZebraProfileConfig(profile)
+      }
+
       if (profiles.size == profilesNames.size) {
-        validateRightProfile()
-
-        if (!isRightProfile) {
-          removeAppFromWrongProfile()
-
-          val rightProfileBundle = appZebraProfile.config
-          val appList = getAppList(rightProfileBundle)
-//
-          val newAppList = appList.map { item ->
-            createAppListBundle(item)
-          }.toMutableList()
-
-//
-          val bundleApp = Bundle()
-          bundleApp.putString("PACKAGE_NAME", PACKAGE_NAME)
-          bundleApp.putStringArray("ACTIVITY_LIST", arrayOf("*"))
-          newAppList.add(bundleApp)
-//            sendProfileData(context, profileBundle)
-        }
+        switchAppAssociation()
       }
     }
-  }
-
-
-  fun setAppZebraProfileConfig(appProfile: ZebraProfile) {
-    appZebraProfile = appProfile
   }
 
   fun setProfileNameList(profileNameList: ArrayList<String>) {
@@ -66,10 +37,37 @@ class ManagerAppList {
   fun setContext(context: Context) {
     myContext = context
   }
+  private fun setAppZebraProfileConfig(appProfile: ZebraProfile) {
+    appZebraProfile = appProfile
+  }
+  private fun switchAppAssociation() {
+    validateRightProfile()
 
+    if (!isRightProfile) {
+      removeAppFromWrongProfile()
+
+      addAppOnRightProfile()
+    }
+  }
+  private fun addAppOnRightProfile() {
+    val rightProfileBundle = appZebraProfile.config
+    val appList = getAppList(rightProfileBundle)
+
+    val newAppList = appList.map { item ->
+      createAppListBundle(item)
+    }.toMutableList()
+
+    val bundleApp = Bundle()
+    bundleApp.putString("PACKAGE_NAME", PACKAGE_NAME)
+    bundleApp.putStringArray("ACTIVITY_LIST", arrayOf("*"))
+    newAppList.add(bundleApp)
+
+    rightProfileBundle.putParcelableArray("APP_LIST", newAppList.toTypedArray())
+    sendProfileData(rightProfileBundle)
+  }
   private fun sendProfileData(bundle: Bundle) {
     val i = Intent()
-    bundle.putString("CONFIG_MODE", "UPDATE")
+    bundle.putString("CONFIG_MODE", "OVERWRITE")
 
     i.setAction("com.symbol.datawedge.api.ACTION")
     i.putExtra("com.symbol.datawedge.api.SET_CONFIG", bundle)
@@ -84,22 +82,12 @@ class ManagerAppList {
       val wrongProfileBundle = profile.config
       val appList = getAppList(wrongProfileBundle)
 
-      Log.d("INFO", profile.config.toString())
       val newAppList = appList.map { item ->
         createAppListBundle(item)
       }.toMutableList()
 
-      val bundleApp = Bundle()
-      bundleApp.putString("PACKAGE_NAME", PACKAGE_NAME)
-      bundleApp.putStringArray("ACTIVITY_LIST", arrayOf(""))
-      newAppList.add(bundleApp)
-
       wrongProfileBundle.putParcelableArray("APP_LIST", newAppList.toTypedArray())
-      Log.d("WRONG", wrongProfileBundle.toString())
-      val profileName = wrongProfileBundle.getString("PROFILE_NAME")
-      Log.d("WRONG", profileName.toString())
       sendProfileData(wrongProfileBundle)
-//          sendProfileData(context, bundle)
     }
   }
 
@@ -132,10 +120,8 @@ class ManagerAppList {
   }
 
   private fun validateRightProfile() {
-//    if (appZebraProfile.profileName == PROFILE_NAME) {
     val result = findApp(appZebraProfile.config)
     isRightProfile = result != null
-//    }
   }
 
   private fun findApp(bundle: Bundle): Bundle? {

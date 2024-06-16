@@ -5,12 +5,12 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.util.Log
 import com.facebook.react.bridge.ReactContext
-import com.zebrascanner.receivebroadcast.ProfileReceiveBroadcast
+import com.zebrascanner.receivebroadcast.ResultReceiveBroadcast
 
 
 class Profile() {
 //  private val filter: IntentFilter = IntentFilter()
-  private var profileReceiveBroadcast = ProfileReceiveBroadcast()
+  private var profileReceiveBroadcast = ResultReceiveBroadcast()
 //  private var _reactContext = null
 
   init {

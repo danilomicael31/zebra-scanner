@@ -8,14 +8,14 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
-import com.zebrascanner.receivebroadcast.ProfileReceiveBroadcast
+import com.zebrascanner.receivebroadcast.ResultReceiveBroadcast
 import com.zebrascanner.receivebroadcast.ScannerReceiveBroadcast
 
 class ZebraScannerModule(reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext), LifecycleEventListener {
   private val _reactContext: ReactApplicationContext? = reactContext
   private var myBroadcastReceiver = ScannerReceiveBroadcast(reactContext)
-  private var profileReceiveBroadcast = ProfileReceiveBroadcast()
+  private var resultReceiveBroadcast = ResultReceiveBroadcast()
   private val _filter: IntentFilter = IntentFilter()
   private var _id: String? = null
   private var _intentAction: String? = null
@@ -45,7 +45,7 @@ class ZebraScannerModule(reactContext: ReactApplicationContext) :
     myBroadcastReceiver.id = _id
     myBroadcastReceiver.action = _intentAction
     myBroadcastReceiver.register(_reactContext, _filter)
-    profileReceiveBroadcast.register(_reactContext, filterProfile)
+    resultReceiveBroadcast.register(_reactContext, filterProfile)
   }
 
   @ReactMethod

@@ -3,12 +3,11 @@ package com.zebrascanner.receivebroadcast
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import com.zebrascanner.ManagerAppList
 import com.zebrascanner.ZebraProfile
 
 
-class ProfileReceiveBroadcast() : ReceiveBroadcast() {
+class ResultReceiveBroadcast() : ReceiveBroadcast() {
   var managerAppList = ManagerAppList()
 
   override fun onReceive(context: Context?, intent: Intent?) {
@@ -22,23 +21,17 @@ class ProfileReceiveBroadcast() : ReceiveBroadcast() {
     }
 
     if (intent.hasExtra("com.symbol.datawedge.api.RESULT_GET_CONFIG")) {
-      val b = intent.extras
+      return getProfileConfig(intent)
+    }
+  }
 
-      val config: Bundle? = b?.getBundle("com.symbol.datawedge.api.RESULT_GET_CONFIG")
+  private fun getProfileConfig(intent: Intent) {
+    val config = intent.getBundleExtra("com.symbol.datawedge.api.RESULT_GET_CONFIG")
+    val profileName = config?.getString("PROFILE_NAME")
 
-      if (config != null && !config.isEmpty) {
-        val profileName = config.getString("PROFILE_NAME")
-
-        if (profileName != null) {
-          if (profileName == "Zebra Scanner") {
-            val appProfileConfig = ZebraProfile(profileName, config)
-            managerAppList.setAppZebraProfileConfig(appProfileConfig)
-          }
-          val profile = ZebraProfile(profileName, config)
-          managerAppList.addProfile(profile)
-        }
-
-      }
+    if (profileName != null) {
+      val profile = ZebraProfile(profileName, config)
+      managerAppList.addProfile(profile)
     }
   }
 
@@ -57,20 +50,30 @@ class ProfileReceiveBroadcast() : ReceiveBroadcast() {
   }
 
   private fun getProfileAssociatedAppList(profileName: String, context: Context) {
-    val pluginName = ArrayList<String>()
+    val pluginName = arrayListOf(
+      "BARCODE",
+      "INTENT",
+      "KEYSTROKE",
+      "IP",
+      "MSR",
+      "RFID",
+      "SERIAL",
+      "VOICE",
+      "WORKFLOW",
+      "DCP",
+      "EKB",
+      "BDF",
+      "ADF",
+      "TOKENS",
+    )
     val bConfig = Bundle()
     val bMain = Bundle()
 
-    pluginName.add("BARCODE")
-    pluginName.add("INTENT"); //to add more plugins
-
-    bConfig.putString("APP_LIST", "") //empty
     bConfig.putStringArrayList("PLUGIN_NAME", pluginName)
 
     bMain.putString("PROFILE_NAME", profileName)
     bMain.putBundle("PLUGIN_CONFIG", bConfig);
-
-    Log.d("MAIN", bMain.toString())
+    bMain.putString("APP_LIST", "")
 
     val i = Intent()
     i.setAction("com.symbol.datawedge.api.ACTION")
