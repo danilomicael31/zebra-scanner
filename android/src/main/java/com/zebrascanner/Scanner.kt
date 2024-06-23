@@ -1,8 +1,8 @@
 package com.zebrascanner
 
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
-import android.util.Log
 import com.facebook.react.bridge.ReactApplicationContext
 
 
@@ -12,7 +12,7 @@ class Scanner(
   val reactContext: ReactApplicationContext
 ) {
   val profileEnabled = true
-  val configMode = "CREATE_PROFILE"
+  val configMode = "CREATE_IF_NOT_EXIST"
   val pluginNameIntent = "INTENT"
   val pluginNameKeystroke = "KEYSTROKE"
   val resetConfig = false
@@ -35,34 +35,16 @@ class Scanner(
     sendBroadCastIntent()
   }
 
-  private fun sendResultRequest() {
-    val intent = Intent()
-    intent.putExtra("SEND_RESULT", "true");
-    intent.putExtra("COMMAND_IDENTIFIER", "123456789");
-  }
-
   private fun sendBroadCastIntent() {
     val intent = Intent()
     intent.setAction("com.symbol.datawedge.api.ACTION")
 
     intent.putExtra("com.symbol.datawedge.api.SET_CONFIG", bundleProfile)
-    intent.putExtra("SEND_RESULT", "true");
-    intent.putExtra("COMMAND_IDENTIFIER", "123456789");
+    intent.putExtra("SEND_RESULT", "COMPLETE_RESULT");
+    intent.putExtra("COMMAND_IDENTIFIER", "PROFILE_CREATED");
 
     reactContext.sendBroadcast(intent)
   }
-
-//  private fun sendBroadCastIntent(bundleParam: Bundle) {
-//    val intent = Intent()
-//    intent.setAction("com.symbol.datawedge.api.ACTION")
-//
-//    bundleProfile.putBundle("PLUGIN_CONFIG", bundleParam)
-//    intent.putExtra("com.symbol.datawedge.api.SET_CONFIG", bundleProfile)
-//    intent.putExtra("SEND_RESULT", "true");
-//    intent.putExtra("COMMAND_IDENTIFIER", "123456789");
-//
-//    reactContext.sendBroadcast(intent)
-//  }
 
   private fun _createProfile(): Bundle {
     val bundleMain = Bundle()
@@ -80,7 +62,7 @@ class Scanner(
     bundleApp.putString("PACKAGE_NAME", packageName)
     bundleApp.putStringArray("ACTIVITY_LIST", arrayOf("*"))
 
-    bundleProfile.putParcelableArray("APP_LIST", arrayOf<Bundle>(bundleApp))
+    bundleProfile.putParcelableArray("APP_LIST", arrayOf(bundleApp))
   }
 
   private fun setKeyStrokeConfig() {

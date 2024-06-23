@@ -3,16 +3,16 @@ package com.zebrascanner
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 
 class ManagerAppList {
   private val profiles = ArrayList<ZebraProfile>()
-  val PROFILE_NAME = "Zebra Scanner"
-  val PACKAGE_NAME = "com.example.certificatemanager"
-
   private var appZebraProfile = ZebraProfile()
   private var profilesNames = ArrayList<String>()
   private var myContext: Context? = null
   private var isRightProfile = false
+  private var profileName: String? = null
+  private var packageName: String? = null
 
   fun addProfile(profile: ZebraProfile) {
     val includes = profiles.find { item -> item.profileName == profile.profileName }
@@ -20,7 +20,7 @@ class ManagerAppList {
     if (includes == null) {
       profiles.add(profile)
 
-      if (profile.profileName == PROFILE_NAME) {
+      if (profile.profileName == this.profileName) {
         setAppZebraProfileConfig(profile)
       }
 
@@ -28,6 +28,14 @@ class ManagerAppList {
         switchAppAssociation()
       }
     }
+  }
+
+  fun setProfileName(profileName: String) {
+    this.profileName = profileName
+  }
+
+  fun setPackageName(packageName: String) {
+    this.packageName = packageName
   }
 
   fun setProfileNameList(profileNameList: ArrayList<String>) {
@@ -58,7 +66,7 @@ class ManagerAppList {
     }.toMutableList()
 
     val bundleApp = Bundle()
-    bundleApp.putString("PACKAGE_NAME", PACKAGE_NAME)
+    bundleApp.putString("PACKAGE_NAME", this.packageName)
     bundleApp.putStringArray("ACTIVITY_LIST", arrayOf("*"))
     newAppList.add(bundleApp)
 
@@ -105,8 +113,8 @@ class ManagerAppList {
     val appList = bundle.getParcelableArrayList<Bundle>("APP_LIST")
 
     val newAppList = appList?.filter { item ->
-      val _packageName = item.getString("PACKAGE_NAME").toString()
-      _packageName != PACKAGE_NAME
+      val packageName = item.getString("PACKAGE_NAME").toString()
+      packageName != this.packageName
     } ?: return ArrayList<Bundle>()
 
     return ArrayList(newAppList)
@@ -127,8 +135,8 @@ class ManagerAppList {
   private fun findApp(bundle: Bundle): Bundle? {
     val appList = bundle.getParcelableArrayList<Bundle>("APP_LIST")
     return appList?.find { item ->
-      val _packageName = item.getString("PACKAGE_NAME").toString()
-      _packageName == PACKAGE_NAME
+      val packageName = item.getString("PACKAGE_NAME").toString()
+      packageName == this.packageName
     }
   }
 }
