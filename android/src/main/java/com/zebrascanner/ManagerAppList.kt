@@ -1,32 +1,32 @@
 package com.zebrascanner
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 
 class ManagerAppList {
-  private val profiles = ArrayList<ZebraProfile>()
-  private var appZebraProfile = ZebraProfile()
-  private var profilesNames = ArrayList<String>()
-  private var myContext: Context? = null
-  private var isRightProfile = false
+  private var rightProfile: ZebraProfile? = null
+  private var wrongProfile: ZebraProfile? = null
   private var profileName: String? = null
   private var packageName: String? = null
+  private var rightProfileName = ""
+  private val intentEmitter = IntentEmitter()
+
+  fun checkActiveProfile(profileName: String) {
+    if(profileName != this.profileName && profileName != rightProfileName) {
+      intentEmitter.requestProfileConfig(profileName)
+      intentEmitter.requestProfileConfig(this.profileName!!)
+    }
+  }
 
   fun addProfile(profile: ZebraProfile) {
-    val includes = profiles.find { item -> item.profileName == profile.profileName }
+    if(profile.profileName == this.profileName)
+      this.rightProfile = profile
 
-    if (includes == null) {
-      profiles.add(profile)
+    if (profile.profileName != this.profileName)
+        this.wrongProfile = profile
 
-      if (profile.profileName == this.profileName) {
-        setAppZebraProfileConfig(profile)
-      }
-
-      if (profiles.size == profilesNames.size) {
-        switchAppAssociation()
-      }
+    if(wrongProfile != null && rightProfile != null) {
+      switchAppAssociation()
     }
   }
 
@@ -38,27 +38,17 @@ class ManagerAppList {
     this.packageName = packageName
   }
 
-  fun setProfileNameList(profileNameList: ArrayList<String>) {
-    profilesNames = profileNameList
-  }
-
   fun setContext(context: Context) {
-    myContext = context
+    this.intentEmitter.setIntentContext(context)
   }
-  private fun setAppZebraProfileConfig(appProfile: ZebraProfile) {
-    appZebraProfile = appProfile
-  }
+
   private fun switchAppAssociation() {
-    validateRightProfile()
-
-    if (!isRightProfile) {
       removeAppFromWrongProfile()
-
       addAppOnRightProfile()
-    }
   }
+
   private fun addAppOnRightProfile() {
-    val rightProfileBundle = appZebraProfile.config
+    val rightProfileBundle = rightProfile!!.config
     val appList = getAppList(rightProfileBundle)
 
     val newAppList = appList.map { item ->
@@ -71,23 +61,12 @@ class ManagerAppList {
     newAppList.add(bundleApp)
 
     rightProfileBundle.putParcelableArray("APP_LIST", newAppList.toTypedArray())
-    sendProfileData(rightProfileBundle)
-  }
-  private fun sendProfileData(bundle: Bundle) {
-    val i = Intent()
-    bundle.putString("CONFIG_MODE", "OVERWRITE")
-
-    i.setAction("com.symbol.datawedge.api.ACTION")
-    i.putExtra("com.symbol.datawedge.api.SET_CONFIG", bundle)
-
-    myContext?.sendBroadcast(i)
+    intentEmitter.overwriteProfile(rightProfileBundle)
   }
 
   private fun removeAppFromWrongProfile() {
-    val profile = getProfile()
-
-    if (profile != null) {
-      val wrongProfileBundle = profile.config
+    if (wrongProfile != null) {
+      val wrongProfileBundle = wrongProfile!!.config
       val appList = getAppList(wrongProfileBundle)
 
       val newAppList = appList.map { item ->
@@ -95,7 +74,7 @@ class ManagerAppList {
       }.toMutableList()
 
       wrongProfileBundle.putParcelableArray("APP_LIST", newAppList.toTypedArray())
-      sendProfileData(wrongProfileBundle)
+      intentEmitter.overwriteProfile(wrongProfileBundle)
     }
   }
 
@@ -118,25 +97,5 @@ class ManagerAppList {
     } ?: return ArrayList<Bundle>()
 
     return ArrayList(newAppList)
-  }
-
-  private fun getProfile(): ZebraProfile? {
-    return profiles.find { item ->
-      val result = findApp(item.config)
-      result != null
-    }
-  }
-
-  private fun validateRightProfile() {
-    val result = findApp(appZebraProfile.config)
-    isRightProfile = result != null
-  }
-
-  private fun findApp(bundle: Bundle): Bundle? {
-    val appList = bundle.getParcelableArrayList<Bundle>("APP_LIST")
-    return appList?.find { item ->
-      val packageName = item.getString("PACKAGE_NAME").toString()
-      packageName == this.packageName
-    }
   }
 }

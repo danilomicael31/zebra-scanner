@@ -26,6 +26,14 @@ export function onInit(id: string) {
   return ZebraScanner.onInit(id);
 }
 
-export function createProfile(profileName: string, intentAction: string) {
-  return ZebraScanner.createProfile(profileName, intentAction);
+export function createProfile(
+  profileName: string,
+  intentAction: string,
+  keystrokeEnabled = false
+) {
+  return ZebraScanner.createProfile(
+    profileName,
+    intentAction,
+    keystrokeEnabled
+  );
 }

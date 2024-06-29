@@ -55,12 +55,12 @@ class ZebraScannerModule(reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
-  fun createProfile(profileName: String, intentAction: String) {
+  fun createProfile(profileName: String, intentAction: String, keystrokeEnabled: Boolean = false) {
     _intentAction = intentAction
     _filter.addAction(intentAction)
     onRegisterReceiver()
 
-    val scanner = Scanner(profileName, intentAction, _reactContext)
+    val scanner = Scanner(profileName, intentAction, keystrokeEnabled, _reactContext)
     managerAppList.setProfileName(profileName)
     managerAppList.setPackageName(_reactContext.packageName)
 
