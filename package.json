@@ -76,7 +76,7 @@
   },
   "peerDependencies": {
     "react": "^18.2.0 || ^18.3.0",
-    "react-native": "0.73.6"
+    "react-native": "^0.73.6 || ^0.76.5"
   },
   "packageManager": "yarn@3.6.1",
   "jest": {
